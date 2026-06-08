@@ -388,6 +388,26 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 </div>
             `).join('');
         }
+         /* YAZI OKUMA VE PAYLAŞMA SİSTEMİ */
+        function openArticle(id) {
+            currentOpenArticleId = id;
+            const article = articlesData.find(a => a.id === id);
+            if(!article) return;
+
+            document.getElementById('modal-category').innerText = article.category;
+            document.getElementById('modal-date').innerText = article.date;
+            document.getElementById('modal-title').innerText = article.title;
+            document.getElementById('modal-content').innerHTML = article.content;
+            
+            document.getElementById('article-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            // URL'yi değiştir (Sayfa yenilenmeden linkin sonuna #yazi-1 gibi ekleme yapar)
+            try {
+                window.history.pushState(null, null, '#yazi-' + id);
+            } catch (e) {
+                console.log("Önizleme modunda URL değiştirme işlemi güvenlik nedeniyle atlandı.");
+            }
 
         function openArticle(id) {
             const article = articlesData.find(a => a.id === id);
