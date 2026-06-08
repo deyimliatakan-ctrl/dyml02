@@ -183,6 +183,10 @@
                     <span id="modal-category" class="bg-white text-black text-xs font-bold px-2 py-1 rounded uppercase"></span>
                     <span id="modal-date" class="text-sm text-gray-400"></span>
                 </div>
+                 <button id="share-btn" onclick="shareArticle()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 hover:text-white transition px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-md">
+                        <i class="fa-solid fa-link"></i> Linki Kopyala
+                    </button>
+                </div>
                 <h1 id="modal-title" class="text-3xl md:text-4xl font-bold mb-6"></h1>
                 <div id="modal-content" class="prose prose-invert max-w-none text-gray-300 leading-relaxed space-y-4"></div>
             </div>
@@ -374,6 +378,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 return;
             }
 
+            
             articlesContainer.innerHTML = filteredData.map(article => `
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-500 transition flex flex-col h-full cursor-pointer" onclick="openArticle(${article.id})">
                     <div class="flex items-center gap-2 mb-4">
@@ -403,7 +408,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             document.body.style.overflow = 'hidden';
             // URL'yi değiştir (Sayfa yenilenmeden linkin sonuna #yazi-1 gibi ekleme yapar)
             try {
-                window.history.pushState(null, null, '#yazi-' + id);
+              window.location.hash = 'yazi-' + id;
             } catch (e) {
                 console.log;
             }
@@ -413,7 +418,13 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             currentOpenArticleId = null;
             document.getElementById('article-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
+             try {
+                window.location.hash = '';
+            } catch (e) {
+                console.log("Önizleme modunda URL değiştirme işlemi güvenlik nedeniyle atlandı.");
             }
+        }
+
        
         // Paylaşma Fonksiyonu
         async function shareArticle() {
@@ -422,26 +433,37 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
 
             // Paylaşılacak tam link (örn: dyml02.com/#yazi-1)
             const shareUrl = window.location.href; 
+            const shareBtn = document.querySelector('button[onclick="shareArticle()"]');
+            const originalHTML = shareBtn.innerHTML;
 
-            // Eğer kullanıcının cihazı yerleşik paylaşım menüsünü destekliyorsa (Mobil cihazların çoğu destekler)
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: article.title,
-                        text: `DYML02'de bu incelemeye göz at: ${article.title}`,
-                        url: shareUrl
-                    });
-                } catch (err) {
-                    console.log('Paylaşım iptal edildi veya bir hata oluştu.', err);
-                }
-            } else {
-                // Desteklemiyorsa (Bazı masaüstü tarayıcıları) linki direkt panoya kopyala
-                try {
-                    await navigator.clipboard.writeText(shareUrl);
-                    alert("Yazının bağlantısı kopyalandı! İstediğiniz yerde paylaşabilirsiniz.");
-                } catch (err) {
-                    alert("Bağlantı kopyalanamadı. Lütfen tarayıcınızın adres çubuğundan linki kopyalayın.");
-                }
+            try {
+                // Sadece bağlantıyı panoya kopyala
+                await navigator.clipboard.writeText(shareUrl);
+                
+                // Başarı mesajı göster
+                shareBtn.innerHTML = '<i class="fa-solid fa-check"></i> Kopyalandı!';
+                shareBtn.classList.add('text-green-400');
+                
+                setTimeout(() => {
+                    shareBtn.innerHTML = originalHTML;
+                    shareBtn.classList.remove('text-green-400');
+                }, 2000);
+            } catch (err) {
+                // Kopyalama başarısız olursa manuel yöntem
+                const tempInput = document.createElement('input');
+                tempInput.value = shareUrl;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                
+                shareBtn.innerHTML = '<i class="fa-solid fa-check"></i> Kopyalandı!';
+                shareBtn.classList.add('text-green-400');
+                
+                setTimeout(() => {
+                    shareBtn.innerHTML = originalHTML;
+                    shareBtn.classList.remove('text-green-400');
+                }, 2000);
             }
         }
 
