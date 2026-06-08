@@ -414,6 +414,60 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             document.getElementById('article-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
             }
+                    // URL'den #yazi etiketini temizle
+            try {
+                window.history.pushState(null, null, window.location.pathname);
+            } catch (e) {
+                console.log("Önizleme modunda URL değiştirme işlemi güvenlik nedeniyle atlandı.");
+            }
+        }
+
+        // Paylaşma Fonksiyonu
+        async function shareArticle() {
+            const article = articlesData.find(a => a.id === currentOpenArticleId);
+            if (!article) return;
+
+            // Paylaşılacak tam link (örn: dyml02.github.io/#yazi-1)
+            const shareUrl = window.location.href; 
+
+            // Eğer kullanıcının cihazı yerleşik paylaşım menüsünü destekliyorsa (Mobil cihazların çoğu destekler)
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: article.title,
+                        text: `DYML02'de bu incelemeye göz at: ${article.title}`,
+                        url: shareUrl
+                    });
+                } catch (err) {
+                    console.log('Paylaşım iptal edildi veya bir hata oluştu.', err);
+                }
+            } else {
+                // Desteklemiyorsa (Bazı masaüstü tarayıcıları) linki direkt panoya kopyala
+                try {
+                    await navigator.clipboard.writeText(shareUrl);
+                    alert("Yazının bağlantısı kopyalandı! İstediğiniz yerde paylaşabilirsiniz.");
+                } catch (err) {
+                    alert("Bağlantı kopyalanamadı. Lütfen tarayıcınızın adres çubuğundan linki kopyalayın.");
+                }
+            }
+        }
+
+        /* BAŞLANGIÇ AYARLARI */
+        window.onload = () => {
+            loadHomeContent();
+            filterArticles('Tümü');
+
+            // Eğer siteye direkt paylaşılan bir linkten (örn: #yazi-2) gelindiyse, o yazıyı otomatik aç
+            const hash = window.location.hash;
+            if (hash.startsWith('#yazi-')) {
+                const articleId = parseInt(hash.replace('#yazi-', ''));
+                if (!isNaN(articleId)) {
+                    switchTab('articles');
+                    openArticle(articleId);
+                }
+            }
+        };
+        
         function openArticle(id) {
             const article = articlesData.find(a => a.id === id);
             if(!article) return;
