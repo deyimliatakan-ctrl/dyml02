@@ -310,7 +310,9 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             }
         }
 
-        /* SAYFA İŞLEVLERİ */
+/* =========================================
+           3. SAYFA VE SEKME İŞLEVLERİ
+           ========================================= */
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
@@ -332,7 +334,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
 
         function loadLatestArticlesCarousel() {
             const marqueeContainer = document.getElementById('latest-articles-marquee');
-            
             if(articlesData.length === 0) {
                 marqueeContainer.innerHTML = '<div class="text-gray-500 p-4">Henüz yazı bulunmuyor.</div>';
                 return;
@@ -346,7 +347,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                     </div>
                     <h3 class="text-lg font-bold mb-2 text-gray-100 line-clamp-2">${article.title}</h3>
                     <p class="text-gray-400 text-sm mb-4 line-clamp-3 overflow-hidden text-ellipsis">${article.summary}</p>
-                    <div class="mt-auto text-xs font-bold text-gray-300">Şimdi Oku &rarr;</div>
+                    <div class="mt-auto text-xs font-bold text-gray-300">İncelemeyi Oku &rarr;</div>
                 </div>
             `).join('');
 
@@ -372,13 +373,12 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 : articlesData.filter(article => article.category === category);
 
             const articlesContainer = document.getElementById('articles-container');
-            
             if(filteredData.length === 0) {
                 articlesContainer.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Bu kategoride henüz yazı bulunmuyor.</div>`;
                 return;
             }
-
             
+            // EKSİK OLAN LİSTELEME BÖLÜMÜ EKLENDİ
             articlesContainer.innerHTML = filteredData.map(article => `
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-500 transition flex flex-col h-full cursor-pointer" onclick="openArticle(${article.id})">
                     <div class="flex items-center gap-2 mb-4">
@@ -392,8 +392,9 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                     </button>
                 </div>
             `).join('');
-        }
-         /* YAZI OKUMA VE PAYLAŞMA SİSTEMİ */
+        } // FONKSİYONU KAPATAN EKSİK PARANTEZ EKLENDİ
+
+        /* YAZI OKUMA VE PAYLAŞMA SİSTEMİ */
         function openArticle(id) {
             currentOpenArticleId = id;
             const article = articlesData.find(a => a.id === id);
@@ -406,11 +407,12 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             
             document.getElementById('article-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
+
             // URL'yi değiştir (Sayfa yenilenmeden linkin sonuna #yazi-1 gibi ekleme yapar)
             try {
-              window.location.hash = 'yazi-' + id;
+                window.location.hash = 'yazi-' + id;
             } catch (e) {
-                console.log;
+                console.log("Önizleme modunda URL değiştirme işlemi güvenlik nedeniyle atlandı.");
             }
         }
 
@@ -418,20 +420,21 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             currentOpenArticleId = null;
             document.getElementById('article-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
-             try {
+
+            // URL'den #yazi etiketini temizle
+            try {
                 window.location.hash = '';
             } catch (e) {
                 console.log("Önizleme modunda URL değiştirme işlemi güvenlik nedeniyle atlandı.");
             }
         }
 
-       
-        // Paylaşma Fonksiyonu
+        // Paylaşma Fonksiyonu (Bağlantı Kopyalama)
         async function shareArticle() {
             const article = articlesData.find(a => a.id === currentOpenArticleId);
             if (!article) return;
 
-            // Paylaşılacak tam link (örn: dyml02.com/#yazi-1)
+            // Paylaşılacak tam link (örn: dyml02.github.io/#yazi-1)
             const shareUrl = window.location.href; 
             const shareBtn = document.querySelector('button[onclick="shareArticle()"]');
             const originalHTML = shareBtn.innerHTML;
@@ -467,27 +470,20 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             }
         }
 
-        function openArticle(id) {
-            const article = articlesData.find(a => a.id === id);
-            if(!article) return;
-
-            document.getElementById('modal-category').innerText = article.category;
-            document.getElementById('modal-date').innerText = article.date;
-            document.getElementById('modal-title').innerText = article.title;
-            document.getElementById('modal-content').innerHTML = article.content;
-            
-            document.getElementById('article-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeArticle() {
-            document.getElementById('article-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
+        /* BAŞLANGIÇ AYARLARI */
         window.onload = () => {
             loadHomeContent();
             filterArticles('Tümü');
+
+            // Eğer siteye dışarıdan linkle (örn: dyml02.github.io/#yazi-2) gelindiyse yazıyı otomatik aç
+            const hash = window.location.hash;
+            if (hash.startsWith('#yazi-')) {
+                const articleId = parseInt(hash.replace('#yazi-', ''));
+                if (!isNaN(articleId)) {
+                    switchTab('articles');
+                    openArticle(articleId);
+                }
+            }
         };
 
     </script>
