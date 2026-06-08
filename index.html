@@ -452,22 +452,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             }
         }
 
-        /* BAŞLANGIÇ AYARLARI */
-        window.onload = () => {
-            loadHomeContent();
-            filterArticles('Tümü');
-
-            // Eğer siteye direkt paylaşılan bir linkten (örn: #yazi-2) gelindiyse, o yazıyı otomatik aç
-            const hash = window.location.hash;
-            if (hash.startsWith('#yazi-')) {
-                const articleId = parseInt(hash.replace('#yazi-', ''));
-                if (!isNaN(articleId)) {
-                    switchTab('articles');
-                    openArticle(articleId);
-                }
-            }
-        };
-        
         function openArticle(id) {
             const article = articlesData.find(a => a.id === id);
             if(!article) return;
