@@ -401,6 +401,12 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             
             document.getElementById('article-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
+            // URL'yi değiştir (Sayfa yenilenmeden linkin sonuna #yazi-1 gibi ekleme yapar)
+            try {
+                window.history.pushState(null, null, '#yazi-' + id);
+            } catch (e) {
+                console.log;
+            }
         }
 
         function closeArticle() {
