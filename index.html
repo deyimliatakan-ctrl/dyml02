@@ -401,14 +401,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             
             document.getElementById('article-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-
-            // URL'yi değiştir (Sayfa yenilenmeden linkin sonuna #yazi-1 gibi ekleme yapar)
-            // HATA ÇÖZÜMÜ: Önizleme ortamlarında çökmeyi engellemek için try-catch eklendi
-            try {
-                window.history.pushState(null, null, '#yazi-' + id);
-            } catch (e) {
-                console.log("Önizleme modunda URL değiştirme işlemi güvenlik nedeniyle atlandı.");
-            }
         }
 
         function closeArticle() {
