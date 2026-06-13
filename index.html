@@ -178,11 +178,15 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
                 
-                <!-- Kategori, Tarih ve Yeni Paylaş Butonu -->
-                <div class="mb-4 flex items-center justify-between pr-8">
-                    <div class="flex items-center gap-3">
+                <!-- Kategori, Tarih, Okunma Sayısı ve Paylaş Butonu -->
+                <div class="mb-4 flex items-center justify-between pr-8 flex-wrap gap-4">
+                    <div class="flex items-center gap-3 flex-wrap">
                         <span id="modal-category" class="bg-white text-black text-xs font-bold px-2 py-1 rounded uppercase"></span>
                         <span id="modal-date" class="text-sm text-gray-400"></span>
+                        <!-- OKUNMA SAYISI ALANI -->
+                        <span id="modal-views" class="text-sm text-gray-400 flex items-center gap-1 bg-gray-800 px-2 py-0.5 rounded-md shadow-inner">
+                            <i class="fa-solid fa-eye"></i> ...
+                        </span>
                     </div>
                     <!-- PAYLAŞ BUTONU -->
                     <button id="share-btn" onclick="shareArticle()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 hover:text-white transition px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-md">
@@ -211,6 +215,9 @@
 
     <script>
         document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // Şu an açık olan yazının ID'sini tutacağımız değişken
+        let currentOpenArticleId = null; 
 
         /* YAZILARINIZI BURAYA EKLEYİNİZ */
         const articlesData = [
@@ -290,7 +297,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                     <h3 class="text-xl font-bold text-white mt-4 mb-2">DEĞERLENDİRME</h3>
                     <p>Avrupa turnesi öncesi haftalık şovları düzenli olarak takip etmiyordum. Bu Raw şovuna kadar haftalık şovların çok da harika olduğunu düşünmüyordum özellikle önceki Avrupa şovlarına göre. Ama bu şov dört dörtlüktü. Tüm maçlar ilgi çekiciydi ve ring içi olarak da güzeldi. Chad Gable’ın hikayesinin geldiği nokta da gayet iyi oldu. Umarım push vermeye başlarlar. Şovla ilgili olmasa da olurdu diyebileceğim tek şey Jey. Jacob’la olan tartışmalarını uzatıp duracaklar muhtemelen, LA Knight’la olan promosu da kötüydü. Fransa seyircisinin her zamanki gibi yine iyiydi, hala daha Yeet yapmaları dışında.</p>
                  `
-            },
+            }
         ];
 
         /* YOUTUBE CANLI VERİ ÇEKME - KALİTE YÜKSELTME SİSTEMLİ */
@@ -346,7 +353,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             }
         }
 
-/* =========================================
+        /* =========================================
            3. SAYFA VE SEKME İŞLEVLERİ
            ========================================= */
         function switchTab(tabId) {
@@ -414,7 +421,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 return;
             }
             
-            // EKSİK OLAN LİSTELEME BÖLÜMÜ EKLENDİ
             articlesContainer.innerHTML = filteredData.map(article => `
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-500 transition flex flex-col h-full cursor-pointer" onclick="openArticle(${article.id})">
                     <div class="flex items-center gap-2 mb-4">
@@ -428,9 +434,9 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                     </button>
                 </div>
             `).join('');
-        } // FONKSİYONU KAPATAN EKSİK PARANTEZ EKLENDİ
+        }
 
-        /* YAZI OKUMA VE PAYLAŞMA SİSTEMİ */
+        /* YAZI OKUMA, GÖRÜNTÜLENME VE PAYLAŞMA SİSTEMİ */
         function openArticle(id) {
             currentOpenArticleId = id;
             const article = articlesData.find(a => a.id === id);
@@ -440,15 +446,27 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             document.getElementById('modal-date').innerText = article.date;
             document.getElementById('modal-title').innerText = article.title;
             document.getElementById('modal-content').innerHTML = article.content;
+
+            // Okunma Sayısını Getir ve Artır
+            const viewsEl = document.getElementById('modal-views');
+            viewsEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; // Yükleniyor animasyonu
+            
+            fetch(`https://api.counterapi.dev/v1/dyml02_site/article_${id}/up`)
+                .then(response => response.json())
+                .then(data => {
+                    viewsEl.innerHTML = `<i class="fa-solid fa-eye"></i> ${data.count}`;
+                })
+                .catch(error => {
+                    viewsEl.innerHTML = `<i class="fa-solid fa-eye"></i> -`; // Hata anında tire gösterir
+                });
             
             document.getElementById('article-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
 
-            // URL'yi değiştir (Sayfa yenilenmeden linkin sonuna #yazi-1 gibi ekleme yapar)
             try {
                 window.location.hash = 'yazi-' + id;
             } catch (e) {
-                console.log("Önizleme modunda URL değiştirme işlemi güvenlik nedeniyle atlandı.");
+                console.log("Önizleme modunda URL değiştirme işlemi atlandı.");
             }
         }
 
@@ -457,11 +475,10 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             document.getElementById('article-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
 
-            // URL'den #yazi etiketini temizle
             try {
                 window.location.hash = '';
             } catch (e) {
-                console.log("Önizleme modunda URL değiştirme işlemi güvenlik nedeniyle atlandı.");
+                console.log("Önizleme modunda URL değiştirme işlemi atlandı.");
             }
         }
 
@@ -470,16 +487,13 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             const article = articlesData.find(a => a.id === currentOpenArticleId);
             if (!article) return;
 
-            // Paylaşılacak tam link (örn: dyml02.github.io/#yazi-1)
             const shareUrl = window.location.href; 
             const shareBtn = document.querySelector('button[onclick="shareArticle()"]');
             const originalHTML = shareBtn.innerHTML;
 
             try {
-                // Sadece bağlantıyı panoya kopyala
                 await navigator.clipboard.writeText(shareUrl);
                 
-                // Başarı mesajı göster
                 shareBtn.innerHTML = '<i class="fa-solid fa-check"></i> Kopyalandı!';
                 shareBtn.classList.add('text-green-400');
                 
@@ -488,7 +502,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                     shareBtn.classList.remove('text-green-400');
                 }, 2000);
             } catch (err) {
-                // Kopyalama başarısız olursa manuel yöntem
                 const tempInput = document.createElement('input');
                 tempInput.value = shareUrl;
                 document.body.appendChild(tempInput);
@@ -511,7 +524,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             loadHomeContent();
             filterArticles('Tümü');
 
-            // Eğer siteye dışarıdan linkle (örn: dyml02.github.io/#yazi-2) gelindiyse yazıyı otomatik aç
             const hash = window.location.hash;
             if (hash.startsWith('#yazi-')) {
                 const articleId = parseInt(hash.replace('#yazi-', ''));
