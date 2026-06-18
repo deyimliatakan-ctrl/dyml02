@@ -6,7 +6,7 @@
     <title>DYML02 - YouTube, İnceleme ve Yazılar</title>
     
     <!-- SİTE SİMGESİ (FAVICON) -->
-    <link rel="icon" type="image/png" href="DYML blog.png">
+    <link rel="icon" type="image/png" href="DYML New Logo (4).png">
 
     <!-- Tailwind CSS (Tasarım için) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -175,7 +175,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="articles-container"></div>
         </div>
 
-        <!-- YAZI OKUMA MODALI (GÜNCELLENDİ: Boşluğa tıklayarak kapatma) -->
+        <!-- YAZI OKUMA MODALI (Boşluğa tıklayarak kapatma) -->
         <div id="article-modal" onclick="if(event.target.id === 'article-modal') closeArticle()" class="fixed inset-0 bg-black/90 z-[60] hidden overflow-y-auto pt-20 pb-10 px-4 cursor-pointer">
             <div class="max-w-3xl mx-auto bg-gray-900 border border-gray-700 rounded-xl p-6 md:p-10 relative mt-10 cursor-default">
                 <button onclick="closeArticle()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl z-10">
@@ -220,8 +220,31 @@
     <script>
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-        // Şu an açık olan yazının ID'sini tutacağımız değişken
         let currentOpenArticleId = null; 
+
+        /* =========================================
+           1. YAZI İSİMLERİNİ URL'YE UYGUN HALE GETİRME (SLUGIFY)
+           Örn: "Yeni Bölüm Nasıldı?" -> "yeni-bolum-nasildi"
+           ========================================= */
+        function createSlug(title) {
+            let str = title.replace(/^\s+|\s+$/g, '').toLowerCase();
+
+            // Türkçe karakterleri ve aksanları İngilizce karakterlere çevir
+            const charMap = {
+                'ğ': 'g', 'ü': 'u', 'ş': 's', 'ı': 'i', 'ö': 'o', 'ç': 'c',
+                'Ğ': 'g', 'Ü': 'u', 'Ş': 's', 'İ': 'i', 'Ö': 'o', 'Ç': 'c'
+            };
+            
+            str = str.replace(/[ğüşıöçĞÜŞİÖÇ]/g, function(match) {
+                return charMap[match];
+            });
+
+            str = str.replace(/[^a-z0-9 -]/g, '') // Alfanümerik olmayanları sil
+                     .replace(/\s+/g, '-') // Boşlukları tireye çevir
+                     .replace(/-+/g, '-'); // Fazla tireleri tek tire yap
+
+            return str;
+        }
 
         /* YAZILARINIZI BURAYA EKLEYİNİZ */
         const articlesData = [
@@ -545,7 +568,9 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             document.body.style.overflow = 'hidden';
 
             try {
-                window.location.hash = 'yazi-' + id;
+                // Link ismini yazı başlığı (slug) ile değiştir
+                const articleSlug = createSlug(article.title);
+                window.location.hash = articleSlug;
             } catch (e) {
                 console.log("Önizleme modunda URL değiştirme işlemi atlandı.");
             }
@@ -600,17 +625,28 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             }
         }
 
-        /* BAŞLANGIÇ AYARLARI */
+        /* BAŞLANGIÇ AYARLARI VE LİNKTEN GELENLERİ YAKALAMA */
         window.onload = () => {
             loadHomeContent();
             filterArticles('Tümü');
 
-            const hash = window.location.hash;
-            if (hash.startsWith('#yazi-')) {
-                const articleId = parseInt(hash.replace('#yazi-', ''));
-                if (!isNaN(articleId)) {
-                    switchTab('articles');
-                    openArticle(articleId);
+            // Eğer siteye dışarıdan özel bir linkle gelindiyse yazıyı otomatik aç
+            const hash = decodeURIComponent(window.location.hash.substring(1));
+            if (hash) {
+                // Eğer eski sistem "yazi-X" linkleriyle gelen varsa diye kontrol
+                if (hash.startsWith('yazi-')) {
+                    const articleId = parseInt(hash.replace('yazi-', ''));
+                    if (!isNaN(articleId)) {
+                        switchTab('articles');
+                        openArticle(articleId);
+                    }
+                } else {
+                    // Yeni sistem: Yazının başlığıyla (slug) eşleşen yazıyı bul
+                    const article = articlesData.find(a => createSlug(a.title) === hash);
+                    if (article) {
+                        switchTab('articles');
+                        openArticle(article.id);
+                    }
                 }
             }
         };
