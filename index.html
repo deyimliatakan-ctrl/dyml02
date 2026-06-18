@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DYML02 - YouTube, İnceleme ve Yazılar</title>
-
-    <link rel="icon" type="image/png" href="DYML blog.png">
     
+    <!-- SİTE SİMGESİ (FAVICON) -->
+    <link rel="icon" type="image/png" href="DYML blog.png">
+
     <!-- Tailwind CSS (Tasarım için) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome (İkonlar için) -->
@@ -174,9 +175,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="articles-container"></div>
         </div>
 
-        <!-- YAZI OKUMA MODALI -->
-        <div id="article-modal" class="fixed inset-0 bg-black/90 z-[60] hidden overflow-y-auto pt-20 pb-10 px-4">
-            <div class="max-w-3xl mx-auto bg-gray-900 border border-gray-700 rounded-xl p-6 md:p-10 relative mt-10">
+        <!-- YAZI OKUMA MODALI (GÜNCELLENDİ: Boşluğa tıklayarak kapatma) -->
+        <div id="article-modal" onclick="if(event.target.id === 'article-modal') closeArticle()" class="fixed inset-0 bg-black/90 z-[60] hidden overflow-y-auto pt-20 pb-10 px-4 cursor-pointer">
+            <div class="max-w-3xl mx-auto bg-gray-900 border border-gray-700 rounded-xl p-6 md:p-10 relative mt-10 cursor-default">
                 <button onclick="closeArticle()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl z-10">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -343,6 +344,36 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                  `
             }
         ];
+
+               /* =========================================
+           2. YAZILARI TARİHE GÖRE SIRALAMA SİSTEMİ 
+           ========================================= */
+        function getSortedArticles(data) {
+            return [...data].sort((a, b) => {
+                const months = {
+                    "Ocak": 0, "Şubat": 1, "Mart": 2, "Nisan": 3, "Mayıs": 4, "Haziran": 5,
+                    "Temmuz": 6, "Ağustos": 7, "Eylül": 8, "Ekim": 9, "Kasım": 10, "Aralık": 11
+                };
+                
+                const parseDate = (dateStr) => {
+                    const parts = dateStr.split(' ');
+                    if (parts.length === 3) {
+                        return new Date(parseInt(parts[2]), months[parts[1]], parseInt(parts[0])).getTime();
+                    }
+                    return 0;
+                };
+
+                const dateA = parseDate(a.date);
+                const dateB = parseDate(b.date);
+                
+                // Tarihler aynıysa (Örn: Aynı gün 3 yazı paylaşıldıysa) ID'si büyük olanı (en son ekleneni) üste koy
+                if (dateB === dateA) {
+                    return b.id - a.id; 
+                }
+                
+                return dateB - dateA; // En yeni tarih en üstte olacak
+            });
+        }
 
         /* YOUTUBE CANLI VERİ ÇEKME - KALİTE YÜKSELTME SİSTEMLİ */
         const YOUTUBE_CHANNEL_ID = "UCYdaRUfmpir19Tp3W4X8spg"; 
