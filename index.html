@@ -345,7 +345,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             }
         ];
 
-               /* =========================================
+       /* =========================================
            2. YAZILARI TARİHE GÖRE SIRALAMA SİSTEMİ 
            ========================================= */
         function getSortedArticles(data) {
@@ -457,7 +457,10 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 return;
             }
 
-            const articlesHTML = articlesData.map(article => `
+            // Kayan yazılar bölümünde de en yeni yazıları öne alıyoruz
+            const sortedArticles = getSortedArticles(articlesData);
+
+            const articlesHTML = sortedArticles.map(article => `
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-500 transition flex flex-col cursor-pointer w-[300px] shrink-0 whitespace-normal" onclick="openArticle(${article.id})">
                     <div class="flex items-center gap-2 mb-3">
                         <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase">${article.category}</span>
@@ -496,7 +499,10 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 return;
             }
             
-            articlesContainer.innerHTML = filteredData.map(article => `
+            // "Yazılar ve İncelemeler" kısmında tarihe göre sıralayarak ekrana bastırıyoruz
+            const sortedData = getSortedArticles(filteredData);
+
+            articlesContainer.innerHTML = sortedData.map(article => `
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-500 transition flex flex-col h-full cursor-pointer" onclick="openArticle(${article.id})">
                     <div class="flex items-center gap-2 mb-4">
                         <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded uppercase">${article.category}</span>
@@ -524,7 +530,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
 
             // Okunma Sayısını Getir ve Artır
             const viewsEl = document.getElementById('modal-views');
-            viewsEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; // Yükleniyor animasyonu
+            viewsEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; 
             
             fetch(`https://api.counterapi.dev/v1/dyml02_site/article_${id}/up`)
                 .then(response => response.json())
@@ -532,7 +538,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                     viewsEl.innerHTML = `<i class="fa-solid fa-eye"></i> ${data.count}`;
                 })
                 .catch(error => {
-                    viewsEl.innerHTML = `<i class="fa-solid fa-eye"></i> -`; // Hata anında tire gösterir
+                    viewsEl.innerHTML = `<i class="fa-solid fa-eye"></i> -`; 
                 });
             
             document.getElementById('article-modal').classList.remove('hidden');
