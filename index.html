@@ -443,12 +443,11 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 const dateA = parseDate(a.date);
                 const dateB = parseDate(b.date);
                 
-                // Tarihler aynıysa (Örn: Aynı gün 3 yazı paylaşıldıysa) ID'si büyük olanı (en son ekleneni) üste koy
                 if (dateB === dateA) {
                     return b.id - a.id; 
                 }
                 
-                return dateB - dateA; // En yeni tarih en üstte olacak
+                return dateB - dateA; 
             });
         }
 
@@ -466,21 +465,18 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 const data = await response.json();
                 
                 if (data.status === 'ok' && data.items.length > 0) {
-                    const latestVideos = data.items.slice(0, 6); // 6 video çekiyoruz
+                    const latestVideos = data.items.slice(0, 6); 
                     
                     videosContainer.innerHTML = latestVideos.map(vid => {
                         const pubDate = new Date(vid.pubDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
                         
-                        // Video ID'sini Linkten Alıp En Yüksek Çözünürlüklü Fotoğrafı Çağırma Sistemi
                         const videoIdMatch = vid.link.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
                         const videoId = videoIdMatch ? videoIdMatch[1] : null;
                         
-                        // HD görsel URL'si (Bulunamazsa standart RSS resmi devreye girer)
                         const hdThumbnailUrl = videoId ? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg` : vid.thumbnail;
                         const fallbackThumbnailUrl = videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : vid.thumbnail;
                         
                         return `
-                        <!-- max-w-[450px] ile kutuların maksimum genişliğini daralttık -->
                         <a href="${vid.link}" target="_blank" class="group bg-gray-900 border border-gray-800 rounded-lg overflow-hidden hover:border-gray-500 transition flex flex-col w-full max-w-[450px]">
                             <div class="relative aspect-video w-full overflow-hidden bg-black">
                                 <img src="${hdThumbnailUrl}" onerror="this.onerror=null; this.src='${fallbackThumbnailUrl}';" alt="${vid.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
@@ -537,7 +533,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             const sortedArticles = getSortedArticles(articlesData);
 
             const articlesHTML = sortedArticles.map(article => {
-                // Kategori bir diziyse aralarına '&' koy, değilse direkt yazdır
                 const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
                 return `
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-500 transition flex flex-col cursor-pointer w-[300px] shrink-0 whitespace-normal" onclick="openArticle(${article.id})">
@@ -554,6 +549,11 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             marqueeContainer.innerHTML = articlesHTML.repeat(4);
         }
 
+        function goToCategory(category) {
+            switchTab('articles');
+            filterArticles(category);
+        }
+
         function filterArticles(category) {
             document.querySelectorAll('.category-btn').forEach(btn => {
                 if(btn.innerText === category) {
@@ -563,7 +563,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 }
             });
 
-            // Hem tekli hem çoklu kategorileri filtreleyebilen yeni mantık
+            // GÜNCELLENEN KISIM: Çoklu kategori (Array) filtresi eklendi
             const filteredData = category === 'Tümü' 
                 ? articlesData 
                 : articlesData.filter(article => {
@@ -627,7 +627,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             document.body.style.overflow = 'hidden';
 
             try {
-                // Link ismini yazı başlığı (slug) ile değiştir
                 const articleSlug = createSlug(article.title);
                 window.location.hash = articleSlug;
             } catch (e) {
@@ -689,10 +688,8 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             loadHomeContent();
             filterArticles('Tümü');
 
-            // Eğer siteye dışarıdan özel bir linkle gelindiyse yazıyı otomatik aç
             const hash = decodeURIComponent(window.location.hash.substring(1));
             if (hash) {
-                // Eğer eski sistem "yazi-X" linkleriyle gelen varsa diye kontrol
                 if (hash.startsWith('yazi-')) {
                     const articleId = parseInt(hash.replace('yazi-', ''));
                     if (!isNaN(articleId)) {
@@ -700,7 +697,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                         openArticle(articleId);
                     }
                 } else {
-                    // Yeni sistem: Yazının başlığıyla (slug) eşleşen yazıyı bul
                     const article = articlesData.find(a => createSlug(a.title) === hash);
                     if (article) {
                         switchTab('articles');
