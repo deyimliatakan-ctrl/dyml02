@@ -534,27 +534,24 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 return;
             }
 
-            // Kayan yazılar bölümünde de en yeni yazıları öne alıyoruz
             const sortedArticles = getSortedArticles(articlesData);
 
-            const articlesHTML = sortedArticles.map(article => `
+            const articlesHTML = sortedArticles.map(article => {
+                // Kategori bir diziyse aralarına '&' koy, değilse direkt yazdır
+                const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
+                return `
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-500 transition flex flex-col cursor-pointer w-[300px] shrink-0 whitespace-normal" onclick="openArticle(${article.id})">
                     <div class="flex items-center gap-2 mb-3">
-                        <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase">${article.category}</span>
+                        <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase">${catText}</span>
                         <span class="text-[10px] text-gray-500">${article.date}</span>
                     </div>
                     <h3 class="text-lg font-bold mb-2 text-gray-100 line-clamp-2">${article.title}</h3>
                     <p class="text-gray-400 text-sm mb-4 line-clamp-3 overflow-hidden text-ellipsis">${article.summary}</p>
                     <div class="mt-auto text-xs font-bold text-gray-300">Şimdi Oku &rarr;</div>
                 </div>
-            `).join('');
+            `}).join('');
 
             marqueeContainer.innerHTML = articlesHTML.repeat(4);
-        }
-
-        function goToCategory(category) {
-            switchTab('articles');
-            filterArticles(category);
         }
 
         function filterArticles(category) {
@@ -566,9 +563,15 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 }
             });
 
+            // Hem tekli hem çoklu kategorileri filtreleyebilen yeni mantık
             const filteredData = category === 'Tümü' 
                 ? articlesData 
-                : articlesData.filter(article => article.category === category);
+                : articlesData.filter(article => {
+                    if (Array.isArray(article.category)) {
+                        return article.category.includes(category);
+                    }
+                    return article.category === category;
+                });
 
             const articlesContainer = document.getElementById('articles-container');
             if(filteredData.length === 0) {
@@ -576,13 +579,14 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 return;
             }
             
-            // "Yazılar ve İncelemeler" kısmında tarihe göre sıralayarak ekrana bastırıyoruz
             const sortedData = getSortedArticles(filteredData);
 
-            articlesContainer.innerHTML = sortedData.map(article => `
+            articlesContainer.innerHTML = sortedData.map(article => {
+                const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
+                return `
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-500 transition flex flex-col h-full cursor-pointer" onclick="openArticle(${article.id})">
                     <div class="flex items-center gap-2 mb-4">
-                        <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded uppercase">${article.category}</span>
+                        <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded uppercase">${catText}</span>
                         <span class="text-xs text-gray-500">${article.date}</span>
                     </div>
                     <h3 class="text-xl font-bold mb-3 text-gray-100">${article.title}</h3>
@@ -591,7 +595,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                         Devamını Oku <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
                     </button>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         /* YAZI OKUMA, GÖRÜNTÜLENME VE PAYLAŞMA SİSTEMİ */
@@ -600,7 +604,8 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             const article = articlesData.find(a => a.id === id);
             if(!article) return;
 
-            document.getElementById('modal-category').innerText = article.category;
+            const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
+            document.getElementById('modal-category').innerText = catText;
             document.getElementById('modal-date').innerText = article.date;
             document.getElementById('modal-title').innerText = article.title;
             document.getElementById('modal-content').innerHTML = article.content;
