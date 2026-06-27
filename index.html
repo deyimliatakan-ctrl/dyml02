@@ -136,8 +136,8 @@
                     <button onclick="switchTab('articles')" class="text-sm text-gray-400 hover:text-white transition">Tümünü Gör</button>
                 </div>
                 
-                <!-- GÜNCELLENEN KISIM: Yana kaydırmalı flex yapı, 2 sütunlu grid yapıya çevrildi -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="latest-articles-marquee">
+                <!-- 3 Sütunlu Grid Yapısı -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="latest-articles-marquee">
                     <!-- Yazılar js ile buraya eklenecek -->
                 </div>
             </div>
@@ -657,8 +657,8 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 return;
             }
 
- // Burada listeyi en yeni 8 yazı ile sınırlandırıyoruz
-            const sortedArticles = getSortedArticles(articlesData).slice(0, 8);
+ // Burada listeyi en yeni 9 yazı ile sınırlandırıyoruz
+            const sortedArticles = getSortedArticles(articlesData).slice(0, 9);
 
             const articlesHTML = sortedArticles.map(article => {
                 const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
