@@ -118,14 +118,14 @@
             
             <!-- Kategorilere Hızlı Erişim -->
             <div class="mb-10">
-                <div class="flex overflow-x-auto hide-scrollbar gap-3 pb-2 snap-x">
-                    <button onclick="goToCategory('Dizi')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-6 py-3 rounded-xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">Dizi</button>
-                    <button onclick="goToCategory('Film')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-6 py-3 rounded-xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">Film</button>
-                    <button onclick="goToCategory('Oyun')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-6 py-3 rounded-xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">Oyun</button>
-                    <button onclick="goToCategory('WWE')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-6 py-3 rounded-xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">WWE</button>
-                    <button onclick="goToCategory('DC')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-6 py-3 rounded-xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">DC</button>
-                    <button onclick="goToCategory('Marvel')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-6 py-3 rounded-xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">Marvel</button>
-                    <button onclick="goToCategory('Nasıldı?')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-6 py-3 rounded-xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">Nasıldı?</button>
+                <div class="flex overflow-x-auto hide-scrollbar gap-4 pb-4 snap-x">
+                    <button onclick="goToCategory('Dizi')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-8 py-4 rounded-2xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">Dizi</button>
+                    <button onclick="goToCategory('Film')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-8 py-4 rounded-2xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">Film</button>
+                    <button onclick="goToCategory('Oyun')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-8 py-4 rounded-2xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">Oyun</button>
+                    <button onclick="goToCategory('WWE')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-8 py-4 rounded-2xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">WWE</button>
+                    <button onclick="goToCategory('DC')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-8 py-4 rounded-2xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">DC</button>
+                    <button onclick="goToCategory('Marvel')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-8 py-4 rounded-2xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">Marvel</button>
+                    <button onclick="goToCategory('Nasıldı?')" class="snap-start whitespace-nowrap bg-red-600 hover:bg-red-700 text-white transition px-8 py-4 rounded-2xl font-bold text-base md:text-lg flex-1 text-center shadow-lg shadow-red-900/20">Nasıldı?</button>
                 </div>
             </div>
 
@@ -647,25 +647,25 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 return;
             }
 
-            // Burada listeyi en yeni 8 yazı ile sınırlandırıyoruz
+ // Burada listeyi en yeni 8 yazı ile sınırlandırıyoruz
             const sortedArticles = getSortedArticles(articlesData).slice(0, 8);
 
             const articlesHTML = sortedArticles.map(article => {
                 const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
-                const posterHTML = article.poster ? `<img src="${article.poster}" class="w-20 h-28 object-cover rounded-lg shrink-0 shadow-md border border-gray-700">` : '';
+                const posterHTML = article.poster ? `<img src="${article.poster}" class="w-24 h-32 md:w-28 md:h-36 object-cover rounded-lg shrink-0 shadow-md border border-gray-700">` : '';
 
-                // GÜNCELLENEN KISIM: Kartların genişlik sabitlemesi kaldırıldı, sütunu tam kaplaması için w-full h-full eklendi
+                // GÜNCELLENEN KISIM: İçeriğin dikey olarak merkeze hizalanıp boşlukların azaltılması
                 return `
-                <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-500 transition flex gap-4 cursor-pointer w-full h-full" onclick="openArticle(${article.id})">
+                <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-500 transition flex gap-4 cursor-pointer w-full h-full items-center" onclick="openArticle(${article.id})">
                     ${posterHTML}
-                    <div class="flex flex-col flex-grow">
+                    <div class="flex flex-col flex-grow justify-center">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">${catText}</span>
-                            <span class="text-[10px] text-gray-500">${article.date}</span>
+                            <span class="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded uppercase">${catText}</span>
+                            <span class="text-xs text-gray-500">${article.date}</span>
                         </div>
-                        <h3 class="text-sm font-bold mb-1 text-gray-100 line-clamp-2">${article.title}</h3>
-                        <p class="text-gray-400 text-xs mb-3 line-clamp-2 overflow-hidden text-ellipsis">${article.summary}</p>
-                        <div class="mt-auto text-[11px] font-bold text-gray-300">Şimdi Oku &rarr;</div>
+                        <h3 class="text-base md:text-lg font-bold mb-1 text-gray-100 line-clamp-2">${article.title}</h3>
+                        <p class="text-gray-400 text-sm mb-2 line-clamp-2 overflow-hidden text-ellipsis">${article.summary}</p>
+                        <div class="mt-1 text-xs font-bold text-gray-300">Şimdi Oku &rarr;</div>
                     </div>
                 </div>
             `}).join('');
