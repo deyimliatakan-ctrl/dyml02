@@ -646,7 +646,8 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 return;
             }
 
-            const sortedArticles = getSortedArticles(articlesData);
+            // Burada listeyi en yeni 8 yazı ile sınırlandırıyoruz
+            const sortedArticles = getSortedArticles(articlesData).slice(0, 8);
 
             const articlesHTML = sortedArticles.map(article => {
                 const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
@@ -667,7 +668,8 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 </div>
             `}).join('');
 
-            marqueeContainer.innerHTML = articlesHTML.repeat(4);
+            // Eski animasyondan kalan repeat(4) komutu temizlendi
+            marqueeContainer.innerHTML = articlesHTML;
         }
 
         function goToCategory(category) {
