@@ -647,8 +647,8 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
 
             const sortedArticles = getSortedArticles(articlesData);
             
-            // Sadece en yeni 5 yazıyı al
-            const latestFiveArticles = sortedArticles.slice(0, 5);
+            // Sadece en yeni 7 yazıyı al
+            const latestFiveArticles = sortedArticles.slice(0, 7);
 
             const articlesHTML = latestFiveArticles.map(article => {
                 const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
