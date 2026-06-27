@@ -136,7 +136,8 @@
                     <button onclick="switchTab('articles')" class="text-sm text-gray-400 hover:text-white transition">Tümünü Gör</button>
                 </div>
                 
-                <div class="flex overflow-x-auto hide-scrollbar gap-4 pb-4 snap-x" id="latest-articles-marquee">
+                <!-- GÜNCELLENEN KISIM: Yana kaydırmalı flex yapı, 2 sütunlu grid yapıya çevrildi -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="latest-articles-marquee">
                     <!-- Yazılar js ile buraya eklenecek -->
                 </div>
             </div>
@@ -653,8 +654,9 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
                 const posterHTML = article.poster ? `<img src="${article.poster}" class="w-20 h-28 object-cover rounded-lg shrink-0 shadow-md border border-gray-700">` : '';
 
+                // GÜNCELLENEN KISIM: Kartların genişlik sabitlemesi kaldırıldı, sütunu tam kaplaması için w-full h-full eklendi
                 return `
-                <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-500 transition flex gap-4 cursor-pointer w-[320px] shrink-0 whitespace-normal" onclick="openArticle(${article.id})">
+                <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-500 transition flex gap-4 cursor-pointer w-full h-full" onclick="openArticle(${article.id})">
                     ${posterHTML}
                     <div class="flex flex-col flex-grow">
                         <div class="flex items-center gap-2 mb-2">
