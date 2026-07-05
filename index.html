@@ -698,9 +698,10 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             const articlesHTML = sortedArticles.map(article => {
                 const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
                 const posterHTML = article.poster ? `<img src="${article.poster}" class="w-24 h-32 md:w-28 md:h-36 object-cover rounded-lg shrink-0 shadow-md border border-gray-700">` : '';
+                const slug = createSlug(article.title);
 
                 return `
-                <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-500 transition flex gap-4 cursor-pointer w-full h-full items-center" onclick="openArticle(${article.id})">
+                <a href="?yazi=${slug}" onclick="openArticle(${article.id}); event.preventDefault();" class="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-500 transition flex gap-4 cursor-pointer w-full h-full items-center">
                     ${posterHTML}
                     <div class="flex flex-col flex-grow justify-center">
                         <div class="flex items-center gap-2 mb-2">
@@ -711,7 +712,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                         <p class="text-gray-400 text-sm mb-2 line-clamp-2 overflow-hidden text-ellipsis">${article.summary}</p>
                         <div class="mt-1 text-xs font-bold text-gray-300">Şimdi Oku &rarr;</div>
                     </div>
-                </div>
+                </a>
             `}).join('');
 
             marqueeContainer.innerHTML = articlesHTML;
@@ -751,9 +752,10 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             articlesContainer.innerHTML = sortedData.map(article => {
                 const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
                 const posterHTML = article.poster ? `<img src="${article.poster}" class="w-24 h-36 md:w-28 md:h-40 object-cover rounded-lg shrink-0 shadow-md border border-gray-700">` : '';
+                const slug = createSlug(article.title);
 
                 return `
-                <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-500 transition flex gap-4 h-full cursor-pointer" onclick="openArticle(${article.id})">
+                <a href="?yazi=${slug}" onclick="openArticle(${article.id}); event.preventDefault();" class="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-500 transition flex gap-4 h-full cursor-pointer">
                     ${posterHTML}
                     <div class="flex flex-col flex-grow">
                         <div class="flex items-center gap-2 mb-3">
@@ -766,12 +768,12 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                             Devamını Oku <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
                         </button>
                     </div>
-                </div>
+                </a>
             `}).join('');
         }
 
         /* YAZI OKUMA, GÖRÜNTÜLENME VE PAYLAŞMA SİSTEMİ (SANAL SAYFALAMA) */
-        function openArticle(id) {
+        function openArticle(id, skipHistory = false) {
             currentOpenArticleId = id;
             const article = articlesData.find(a => a.id === id);
             if(!article) return;
@@ -806,23 +808,32 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             
             // Pop-up yerine yeni sayfa sekmesine geçiş
             switchTab('article-view');
+            window.scrollTo(0, 0);
 
-            try {
-                const articleSlug = createSlug(article.title);
-                window.location.hash = articleSlug;
-            } catch (e) {
-                console.log("Önizleme modunda URL değiştirme işlemi atlandı.");
+            if (!skipHistory) {
+                try {
+                    const articleSlug = createSlug(article.title);
+                    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?yazi=' + articleSlug;
+                    window.history.pushState({path: newUrl}, '', newUrl);
+                } catch (e) {
+                    console.log("Önizleme modunda URL değiştirme işlemi atlandı.");
+                }
             }
         }
 
-        function closeArticle() {
+        function closeArticle(skipHistory = false) {
             currentOpenArticleId = null;
             // Kapatılınca tüm yazılar listesine döner
             switchTab('articles');
-            try {
-                window.location.hash = '';
-            } catch (e) {
-                console.log("Önizleme modunda URL değiştirme işlemi atlandı.");
+            window.scrollTo(0, 0);
+            
+            if (!skipHistory) {
+                try {
+                    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                    window.history.pushState({path: newUrl}, '', newUrl);
+                } catch (e) {
+                    console.log("Önizleme modunda URL değiştirme işlemi atlandı.");
+                }
             }
         }
 
@@ -864,21 +875,45 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
         }
 
         /* BAŞLANGIÇ AYARLARI VE LİNKTEN GELENLERİ YAKALAMA */
+        window.addEventListener('popstate', function(e) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const yaziParam = urlParams.get('yazi');
+            
+            if (yaziParam) {
+                const article = articlesData.find(a => createSlug(a.title) === yaziParam);
+                if (article) {
+                    openArticle(article.id, true);
+                }
+            } else {
+                closeArticle(true);
+            }
+        });
+
         window.onload = () => {
             loadHomeContent();
             filterArticles('Tümü');
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const yaziParam = urlParams.get('yazi');
             const hash = decodeURIComponent(window.location.hash.substring(1));
-            if (hash) {
+
+            if (yaziParam) {
+                // Yeni SEO uyumlu link sistemi (Örn: ?yazi=avengers-doomsday)
+                const article = articlesData.find(a => createSlug(a.title) === yaziParam);
+                if (article) {
+                    openArticle(article.id, true);
+                }
+            } else if (hash) {
+                // Eski sistem hash (#) linkleriyle (Twitter vb.) gelenleri yakalamaya devam et
                 if (hash.startsWith('yazi-')) {
                     const articleId = parseInt(hash.replace('yazi-', ''));
                     if (!isNaN(articleId)) {
-                        openArticle(articleId);
+                        openArticle(articleId, true);
                     }
                 } else {
                     const article = articlesData.find(a => createSlug(a.title) === hash);
                     if (article) {
-                        openArticle(article.id);
+                        openArticle(article.id, true);
                     }
                 }
             }
