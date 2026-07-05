@@ -23,11 +23,11 @@
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
         
-        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
         .tab-content.active { display: block; }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -129,7 +129,7 @@
                 </div>
             </div>
 
-            <!-- Hareketli Son Yazılar Paneli (Artık Manuel Kaydırmalı) -->
+            <!-- Son Yazılar Paneli -->
             <div class="mb-12">
                 <div class="flex justify-between items-end mb-6 border-b border-gray-800 pb-2">
                     <h2 class="text-2xl font-bold">Son Yazılar ve İncelemeler</h2>
@@ -159,7 +159,7 @@
             </div>
         </div>
 
-        <!-- YAZILAR & İNCELEMELER SEKMESİ -->
+        <!-- YAZILAR & İNCELEMELER LİSTE SEKMESİ -->
         <div id="articles" class="tab-content">
             <h2 class="text-3xl font-bold mb-6 text-center md:text-left"><i class="fa-solid fa-newspaper mr-2"></i> İncelemeler ve Makaleler</h2>
             
@@ -177,21 +177,30 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="articles-container"></div>
         </div>
 
-        <!-- YAZI OKUMA MODALI (Boşluğa tıklayarak kapatma) -->
-        <div id="article-modal" onclick="if(event.target.id === 'article-modal') closeArticle()" class="fixed inset-0 bg-black/90 z-[60] hidden overflow-y-auto pt-20 pb-10 px-4 cursor-pointer">
-            <div class="max-w-3xl mx-auto bg-gray-900 border border-gray-700 rounded-xl p-6 md:p-10 relative mt-10 cursor-default">
-                <button onclick="closeArticle()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl z-10">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+        <!-- TAM SAYFA YAZI OKUMA EKRANI (YENİ YAPILANDIRMA) -->
+        <div id="article-view" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <!-- Üst Gezinme ve Geri Dön Butonu -->
+                <div class="mb-6 flex justify-between items-center">
+                    <button onclick="closeArticle()" class="text-gray-400 hover:text-white transition flex items-center gap-2 group">
+                        <div class="bg-gray-800 group-hover:bg-red-600 p-2 rounded-full transition">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </div>
+                        <span class="font-bold">Geri Dön</span>
+                    </button>
+                </div>
+
+                <!-- Tepe Görseli (Poster varsa) -->
+                <img id="view-poster" src="" class="w-full h-[300px] md:h-[450px] object-cover rounded-2xl mb-8 hidden shadow-2xl border border-gray-800">
                 
                 <!-- Kategori, Tarih, Okunma Sayısı ve Paylaş Butonu -->
-                <div class="mb-4 flex items-center justify-between pr-8 flex-wrap gap-4">
+                <div class="mb-6 flex items-center justify-between flex-wrap gap-4 border-b border-gray-800 pb-6">
                     <div class="flex items-center gap-3 flex-wrap">
-                        <span id="modal-category" class="bg-white text-black text-xs font-bold px-2 py-1 rounded uppercase"></span>
-                        <span id="modal-date" class="text-sm text-gray-400"></span>
+                        <span id="view-category" class="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded uppercase tracking-wider"></span>
+                        <span id="view-date" class="text-sm text-gray-400 font-medium"></span>
                         <!-- OKUNMA SAYISI ALANI -->
-                        <span id="modal-views" class="text-sm text-gray-400 flex items-center gap-1 bg-gray-800 px-2 py-0.5 rounded-md shadow-inner">
-                            <i class="fa-solid fa-eye"></i> ...
+                        <span id="view-views" class="text-sm text-gray-400 flex items-center gap-1.5 bg-gray-900 px-3 py-1 rounded-md shadow-inner border border-gray-800 font-medium">
+                            <i class="fa-solid fa-eye text-gray-500"></i> ...
                         </span>
                     </div>
                     <!-- PAYLAŞ BUTONU -->
@@ -200,8 +209,16 @@
                     </button>
                 </div>
                 
-                <h1 id="modal-title" class="text-3xl md:text-4xl font-bold mb-6"></h1>
-                <div id="modal-content" class="prose prose-invert max-w-none text-gray-300 leading-relaxed space-y-4"></div>
+                <!-- Başlık ve İçerik -->
+                <h1 id="view-title" class="text-3xl md:text-5xl font-black mb-8 leading-tight"></h1>
+                <div id="view-content" class="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed space-y-6"></div>
+                
+                <!-- Sayfa Sonu Geri Dönüş -->
+                <div class="mt-16 pt-8 border-t border-gray-800 text-center">
+                    <button onclick="closeArticle()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition shadow-lg shadow-red-900/20">
+                        Yazılara Geri Dön
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -226,25 +243,15 @@
 
         /* =========================================
            1. YAZI İSİMLERİNİ URL'YE UYGUN HALE GETİRME (SLUGIFY)
-           Örn: "Yeni Bölüm Nasıldı?" -> "yeni-bolum-nasildi"
            ========================================= */
         function createSlug(title) {
             let str = title.replace(/^\s+|\s+$/g, '').toLowerCase();
-
-            // Türkçe karakterleri ve aksanları İngilizce karakterlere çevir
             const charMap = {
                 'ğ': 'g', 'ü': 'u', 'ş': 's', 'ı': 'i', 'ö': 'o', 'ç': 'c',
                 'Ğ': 'g', 'Ü': 'u', 'Ş': 's', 'İ': 'i', 'Ö': 'o', 'Ç': 'c'
             };
-            
-            str = str.replace(/[ğüşıöçĞÜŞİÖÇ]/g, function(match) {
-                return charMap[match];
-            });
-
-            str = str.replace(/[^a-z0-9 -]/g, '') // Alfanümerik olmayanları sil
-                     .replace(/\s+/g, '-') // Boşlukları tireye çevir
-                     .replace(/-+/g, '-'); // Fazla tireleri tek tire yap
-
+            str = str.replace(/[ğüşıöçĞÜŞİÖÇ]/g, function(match) { return charMap[match]; });
+            str = str.replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-'); 
             return str;
         }
 
@@ -316,7 +323,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                     <p>Seth Rollins ve Montez Ford arka alanda konuşurlarken, Bloodline karşılarına çıkıyor. Jey, Roman’a söyledikleri için Seth’le yüzleşiyor ve Seth’i halletmesi için Jacob’a sesleniyor ancak Jacob, Jey’i takmıyor. Daha sonrasında bu üçlü tartışmaya başlıyor.</p>
                     <p>Bayley, Women’s Intercontinental Championship maçı öncesinde Lyra Valkyria’yı gazlıyor.</p>
                     <h3 class="text-xl font-bold text-white mt-4 mb-2"> Sol Ruca vs Lyra Valkyria – Women’s Intercontinental Championship</h3>
-                    <p>Gece bir güzel maçla daha devam ediyor. Sol Ruca, ana kadroya beklenilenden biraz daha zayıf başlangıç yapmasına rağmen kemeri kazanmayı başarmıştı. Kemerini savunduğu ilk maçta Lyra Valkyria ile iyi bir maç çıkardılar. İkilinin arasındaki kimya birkaç yerde teklemeleri dışında uyumluydu. Lyra, üst üste yaptığı botchlardan sonra fazla kullanılmamaya başlanmıştı. Bayley’le olan hikayesi de bir yere bağlanmadı. Umarım daha fazla kullanmaya başlarlar. Sol Ruca’nın saltanatı da umarım iyi bir şekilde devam eder. Sol Snatcher hareketinin sıkıntılarından biri hareketi yiyen kişinin öyle durmasıydı ama bu maçın sonunda Lyra’nın ayağı takılması gibi basit ama mantıklı bir şekilde hareketi gördük. Sol Ruca, böylece ilk kemer korumasını yapmış oldu.</p>
+                    <p>Gece bir güzel maçla daha devam ediyor. Sol Ruca, ana kadroya beklenilenden biraz daha zayıf başlangıç yapmasına rağmen kemeri kazanmayı başarmıştı. Kemerini savunduğu ilk maçta Lyra Valkyria ile iyi bir maç çıkardılar. İkilinin arasındaki kimya birkaç yerde teklemeleri dışında uyumluydu. Lyra, üst üste yaptığı botchlardan sonra fazla kullanılmamaya başlanmıştı. Bayley’le olan hikayesi de bir yere bağlanmadı. Umarım daha fazla kullanmaya başlarlar. Sol Ruca’nın saltanatı da umarım iyi bir şekilde devam eder. Sol Snatcher hareketinin sıkıntılarından biri hareketi yiyen kişinin öyle durmasıydı ama this maçın sonunda Lyra’nın ayağı takılması gibi basit ama mantıklı bir şekilde hareketi gördük. Sol Ruca, böylece ilk kemer korumasını yapmış oldu.</p>
                     <h3 class="text-xl font-bold text-white mt-4 mb-2"> “Let Me Talk To, Ya!”</h3>
                     <p>LA Knight; King of the Ring’i kazanıp, Roman Reigns’i yeneceğini söylüyor. Roman Reigns’in kemerini koruması için tüm sülalesinin ona yardım edeceğini söyledikten sonra Jey Uso geliyor. Jey; Yeet yapmaktan nefes nefese kalıyor, bir şeyler zırvaladıktan sonra ringten ayrılıyor. LA Knight, Jey’e ailenin sikim dedikten sonra Jey ringe doğru gelirken Jimmy onu durduyor.</p>
                     <h3 class="text-xl font-bold text-white mt-4 mb-2">Chad Gable, Özür Turu Devam Ediyor</h3>
@@ -574,7 +581,7 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                     <h3 class="text-xl font-bold text-white mt-4 mb-2">DEĞERLENDİRME</h3>
                     <p>Öncelikle unutmadan şunu söylemeliyim, Premium Live Event'lerde reklam olması kabul edilemez ve bu reklamlar dört dakika sürüyor. Maalesef TKO bünyesi altında WWE, tam bir paragöz firma oldu. Şov da fena değildi. United States kemerlerinin maçları şovun temposunu düşürdü. King ve Queen maçlarının sonuçlarını taraf olduklarım kazandığı için de memnunum. Üzerine Cody de kemeri kaybetti. </p>
                `
-            },
+            }
         ];
        
        
@@ -686,14 +693,12 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 return;
             }
 
- // Burada listeyi en yeni 9 yazı ile sınırlandırıyoruz
             const sortedArticles = getSortedArticles(articlesData).slice(0, 9);
 
             const articlesHTML = sortedArticles.map(article => {
                 const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
                 const posterHTML = article.poster ? `<img src="${article.poster}" class="w-24 h-32 md:w-28 md:h-36 object-cover rounded-lg shrink-0 shadow-md border border-gray-700">` : '';
 
-                // GÜNCELLENEN KISIM: İçeriğin dikey olarak merkeze hizalanıp boşlukların azaltılması
                 return `
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-500 transition flex gap-4 cursor-pointer w-full h-full items-center" onclick="openArticle(${article.id})">
                     ${posterHTML}
@@ -709,7 +714,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 </div>
             `}).join('');
 
-            // Eski animasyondan kalan repeat(4) komutu temizlendi
             marqueeContainer.innerHTML = articlesHTML;
         }
 
@@ -727,7 +731,6 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 }
             });
 
-            // GÜNCELLENEN KISIM: Çoklu kategori (Array) filtresi eklendi
             const filteredData = category === 'Tümü' 
                 ? articlesData 
                 : articlesData.filter(article => {
@@ -767,33 +770,42 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
             `}).join('');
         }
 
-        /* YAZI OKUMA, GÖRÜNTÜLENME VE PAYLAŞMA SİSTEMİ */
+        /* YAZI OKUMA, GÖRÜNTÜLENME VE PAYLAŞMA SİSTEMİ (SANAL SAYFALAMA) */
         function openArticle(id) {
             currentOpenArticleId = id;
             const article = articlesData.find(a => a.id === id);
             if(!article) return;
 
             const catText = Array.isArray(article.category) ? article.category.join(' & ') : article.category;
-            document.getElementById('modal-category').innerText = catText;
-            document.getElementById('modal-date').innerText = article.date;
-            document.getElementById('modal-title').innerText = article.title;
-            document.getElementById('modal-content').innerHTML = article.content;
+            document.getElementById('view-category').innerText = catText;
+            document.getElementById('view-date').innerText = article.date;
+            document.getElementById('view-title').innerText = article.title;
+            document.getElementById('view-content').innerHTML = article.content;
+
+            // Poster Görseli Kontrolü
+            const posterEl = document.getElementById('view-poster');
+            if (article.poster) {
+                posterEl.src = article.poster;
+                posterEl.classList.remove('hidden');
+            } else {
+                posterEl.classList.add('hidden');
+            }
 
             // Okunma Sayısını Getir ve Artır
-            const viewsEl = document.getElementById('modal-views');
-            viewsEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; 
+            const viewsEl = document.getElementById('view-views');
+            viewsEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-gray-500"></i>'; 
             
             fetch(`https://api.counterapi.dev/v1/dyml02_site/article_${id}/up`)
                 .then(response => response.json())
                 .then(data => {
-                    viewsEl.innerHTML = `<i class="fa-solid fa-eye"></i> ${data.count}`;
+                    viewsEl.innerHTML = `<i class="fa-solid fa-eye text-gray-500"></i> ${data.count}`;
                 })
                 .catch(error => {
-                    viewsEl.innerHTML = `<i class="fa-solid fa-eye"></i> -`; 
+                    viewsEl.innerHTML = `<i class="fa-solid fa-eye text-gray-500"></i> -`; 
                 });
             
-            document.getElementById('article-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+            // Pop-up yerine yeni sayfa sekmesine geçiş
+            switchTab('article-view');
 
             try {
                 const articleSlug = createSlug(article.title);
@@ -805,9 +817,8 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
 
         function closeArticle() {
             currentOpenArticleId = null;
-            document.getElementById('article-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-
+            // Kapatılınca tüm yazılar listesine döner
+            switchTab('articles');
             try {
                 window.location.hash = '';
             } catch (e) {
@@ -862,13 +873,11 @@ Bu açıklamalardan sonra Doomsday’de harcanacağını düşündüğüm ilk ka
                 if (hash.startsWith('yazi-')) {
                     const articleId = parseInt(hash.replace('yazi-', ''));
                     if (!isNaN(articleId)) {
-                        switchTab('articles');
                         openArticle(articleId);
                     }
                 } else {
                     const article = articlesData.find(a => createSlug(a.title) === hash);
                     if (article) {
-                        switchTab('articles');
                         openArticle(article.id);
                     }
                 }
